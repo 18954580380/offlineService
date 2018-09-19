@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.koboro.offlineservice.repository.CustomerInformationMapper">
+   <!-- 查询主要问题,主要症状 -->
+   <select id="selectCustomerInformationById" parameterType="java.lang.Long" resultType="CustomerInformation">
+    SELECT * FROM koboro_customer_information a  WHERE a.id=#{id}
+   </select>
+   <select id="selectCustomerInformationByArchivalNumber" parameterType="java.lang.String" resultType="CustomerInformation">
+    SELECT * FROM koboro_customer_information a  WHERE a.archival_number=#{archivalNumber}
+   </select>
+   <select id="selectCustomerInformation" parameterType="CustomerInformation" resultType="CustomerInformation">
+    SELECT * FROM koboro_customer_information a  WHERE a.company_name=#{companyName}
+    <if test="name != null and name != ''">
+        AND a.name LIKE "%"#{name}"%"
+    </if>
+    <if test="dept != null and dept != ''">
+        AND a.dept = "%"#{dept}"%"
+    </if>
+    <if test="phoneNumber != null and phoneNumber != ''">
+        AND a.phone_number = "%"#{phoneNumber}"%"
+    </if>
+    <if test="sex != null and sex != ''">
+        AND a.sex = "%"#{sex}"%"
+    </if>
+   </select>
+   <select id="selectCustomerInformationByblocName" parameterType="java.lang.String" resultType="java.util.HashMap">
+    SELECT
+        cust.id,cust.archival_number,cust.name,cust.dept,cust.phone_number,cust.sex,heal.current_diagnosis,heal.main_health_problems_string,heal.abnormal_clinical_indicators
+    FROM
+        KOBORO_CUSTOMER_INFORMATION cust
+    LEFT JOIN KOBORO_PERSONAL_HEALTH_RECORDS heal ON cust.archival_number = heal.archival_number
+    WHERE 1=1
+    <if test="blocName != null and blocName != ''">
+       AND cust.company_name LIKE  "%"#{blocName}"%"
+    </if>
+    <if test="partyBuilding == 'yes'">
+       AND heal.created_time is NOT NULL AND heal.created_time != ''
+    </if>
+    <if test="partyBuilding == 'no'">
+       AND heal.created_time is null
+    </if>
+    <if test="name != null and name != ''">
+        AND cust.name LIKE   "%"#{name}"%"
+    </if>
+    <if test="dept != null and dept != ''">
+        AND cust.dept LIKE   "%"#{dept}"%"
+    </if>
+    <if test="sex != null and sex != ''">
+        AND cust.sex LIKE   "%"#{sex}"%"
+    </if>
+    <if test="phoneNumber != null and phoneNumber != ''">
+        AND  cust.phone_number LIKE  "%"#{phoneNumber}"%"
+    </if>
+    <if test="abnormal_clinical_indicators != null and abnormal_clinical_indicators != ''">
+        AND  heal.abnormal_clinical_indicators LIKE  "%"#{abnormal_clinical_indicators}"%"
+    </if>
+    <if test="main_health_problems_string != null and main_health_problems_string != ''">
+        AND  heal.main_health_problems_string LIKE  "%"#{main_health_problems_string}"%"
+    </if>
+       GROUP BY cust.archival_number
+	</select>
+    <!-- 新增查询-->
+   <select id="selectCustomerInformationByMain" parameterType="java.lang.String" resultType="java.util.HashMap">
+    SELECT
+        cust.archival_number
+    FROM
+        KOBORO_CUSTOMER_INFORMATION cust
+    LEFT JOIN KOBORO_PERSONAL_HEALTH_RECORDS heal ON cust.archival_number = heal.archival_number
+    WHERE 1=1
+    <if test="abnormal_clinical_indicators != null and abnormal_clinical_indicators != ''">
+        AND  heal.abnormal_clinical_indicators LIKE  "%"#{abnormal_clinical_indicators}"%"
+    </if>
+    <if test="main_health_problems_string != null and main_health_problems_string != ''">
+        AND  heal.main_health_problems_string LIKE  "%"#{main_health_problems_string}"%"
+    </if>
+       GROUP BY cust.archival_number
+	</select>
+   <select id="selectReportProblemList" parameterType="java.lang.String" resultType="java.util.HashMap">
+    SELECT
+       report_problem
+    FROM
+        KOBORO_PHYSICAL
+    WHERE
+        archival_number=#{archivalNumber}
+    <if test="reportProblem != null and reportProblem != ''">
+       AND report_problem LIKE "%"#{reportProblem}"%"
+    </if>
+    ORDER BY created_time DESC LIMIT 1
+	</select>
+   <select id="selectAssessmentList" parameterType="java.lang.String" resultType="java.util.HashMap">
+    SELECT
+       risk_result
+    FROM
+       KOBORO_RISK_ASSESSMENT_QUESTIONNAIRE
+    WHERE
+        archival_number=#{archivalNumber}
+    <if test="riskResult != null and riskResult != ''">
+       AND risk_result LIKE "%"#{riskResult}"%"
+    </if>
+    ORDER BY created_time DESC LIMIT 1
+	</select>
+    <!--查询主要问题人数-->
+   <select id="selectCustomerInformationMainProblemarrCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT
+        count(1)
+    FROM
+        (
+            SELECT
+                count(1)
+            FROM
+                KOBORO_CUSTOMER_INFORMATION cust
+            LEFT JOIN KOBORO_PERSONAL_HEALTH_RECORDS heal ON cust.archival_number = heal.archival_number
+            WHERE
+                heal.current_diagnosis LIKE "%"#{arr}"%"
+            GROUP BY
+                cust.archival_number
+        ) s
+	</select>
+    <!--查询主要问题下的所有用户-->
+   <select id="selectCustomerInformationMainProblemarr" parameterType="java.lang.String" resultType="CustomerInformation">
+        SELECT
+            cust.*
+        FROM
+            KOBORO_CUSTOMER_INFORMATION cust
+        LEFT JOIN KOBORO_PERSONAL_HEALTH_RECORDS heal ON cust.archival_number = heal.archival_number
+        WHERE
+            heal.current_diagnosis LIKE "%"#{arr}"%"
+        GROUP BY
+            cust.archival_number
+	</select>
+    <!--查询主要问题下的所有用户-->
+   <select id="selectCustomerInformationMainProblemList" parameterType="java.lang.String" resultType="java.util.HashMap">
+        SELECT
+            cust.*,heal.current_diagnosis
+        FROM
+            KOBORO_CUSTOMER_INFORMATION cust
+        LEFT JOIN KOBORO_PERSONAL_HEALTH_RECORDS heal ON cust.archival_number = heal.archival_number
+        WHERE
+            heal.current_diagnosis LIKE "%"#{arr}"%"
+        GROUP BY
+            cust.archival_number
+	</select>
+    <!--查询主要症状人数-->
+   <select id="selectCustomerInformationMainSymptomarrCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT
+        count(1)
+    FROM
+        (
+            SELECT
+                count(1)
+            FROM
+                KOBORO_CUSTOMER_INFORMATION cust
+            LEFT JOIN KOBORO_PERSONAL_HEALTH_RECORDS heal ON cust.archival_number = heal.archival_number
+            WHERE
+                heal.current_diagnosis LIKE "%"#{arr}"%"
+            GROUP BY
+                cust.archival_number
+        ) s
+	</select>
+    <!--查询主要症状下的所有用户-->
+   <select id="selectCustomerInformationMainSymptomarr" parameterType="java.lang.String" resultType="CustomerInformation">
+            SELECT
+                cust.*
+            FROM
+                KOBORO_CUSTOMER_INFORMATION cust
+            LEFT JOIN KOBORO_PERSONAL_HEALTH_RECORDS heal ON cust.archival_number = heal.archival_number
+            WHERE
+                heal.current_diagnosis LIKE "%"#{arr}"%"
+            GROUP BY
+                cust.archival_number
+	</select>
+    <!--查询主要症状下的所有用户-->
+   <select id="selectCustomerInformationMainSymptomList" parameterType="java.lang.String" resultType="java.util.HashMap">
+            SELECT
+                cust.*,heal.current_diagnosis
+            FROM
+                KOBORO_CUSTOMER_INFORMATION cust
+            LEFT JOIN KOBORO_PERSONAL_HEALTH_RECORDS heal ON cust.archival_number = heal.archival_number
+            WHERE
+                heal.current_diagnosis LIKE "%"#{arr}"%"
+            GROUP BY
+                cust.archival_number
+	</select>
+    <!--查询阳性指标人数-->
+   <select id="selectCustomerInformationPositiveIndexarrCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT
+        count(1)
+    FROM
+        (
+            SELECT
+                count(1)
+            FROM
+                KOBORO_CUSTOMER_INFORMATION cust
+            LEFT JOIN KOBORO_PERSONAL_HEALTH_RECORDS heal ON cust.archival_number = heal.archival_number
+            WHERE
+                heal.abnormal_clinical_indicators LIKE "%"#{arr}"%"
+            GROUP BY
+                cust.archival_number
+        ) s
+	</select>
+    <!--查询阳性指标下的用户-->
+   <select id="selectCustomerInformationPositiveIndexarr" parameterType="java.lang.String" resultType="CustomerInformation">
+            SELECT
+                cust.*
+            FROM
+                KOBORO_CUSTOMER_INFORMATION cust
+            LEFT JOIN KOBORO_PERSONAL_HEALTH_RECORDS heal ON cust.archival_number = heal.archival_number
+            WHERE
+                heal.abnormal_clinical_indicators LIKE "%"#{arr}"%"
+            GROUP BY
+                cust.archival_number
+	</select>
+    <!--查询阳性指标下的用户-->
+   <select id="selectCustomerInformationPositiveIndexList" parameterType="java.lang.String" resultType="java.util.HashMap">
+            SELECT
+                cust.*,heal.abnormal_clinical_indicators
+            FROM
+                KOBORO_CUSTOMER_INFORMATION cust
+            LEFT JOIN KOBORO_PERSONAL_HEALTH_RECORDS heal ON cust.archival_number = heal.archival_number
+            WHERE
+                heal.abnormal_clinical_indicators LIKE "%"#{arr}"%"
+            GROUP BY
+                cust.archival_number
+	</select>
+    <!--查询健康风险人数-->
+   <select id="selectCustomerInformationHealthRiskarrCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT
+        count(1)
+    FROM
+        (
+            SELECT
+                count(1)
+            FROM
+                KOBORO_CUSTOMER_INFORMATION cust
+            LEFT JOIN KOBORO_RISK_ASSESSMENT_QUESTIONNAIRE heal ON cust.archival_number = heal.archival_number
+            WHERE
+                heal.risk_result LIKE "%"#{arr}"%"
+            GROUP BY
+                cust.archival_number
+        ) s
+	</select>
+    <!--查询健康风险下的u用户 -->
+   <select id="selectCustomerInformationHealthRiskarr" parameterType="java.lang.String" resultType="CustomerInformation">
+        SELECT
+            cust.*
+        FROM
+            KOBORO_CUSTOMER_INFORMATION cust
+        LEFT JOIN KOBORO_RISK_ASSESSMENT_QUESTIONNAIRE heal ON cust.archival_number = heal.archival_number
+        WHERE
+            heal.risk_result LIKE "%"#{arr}"%"
+        GROUP BY
+            cust.archival_number
+	</select>
+    <!--查询健康风险下的u用户 -->
+   <select id="selectCustomerInformationHealthRiskList" parameterType="java.lang.String" resultType="java.util.HashMap">
+        SELECT
+            cust.*,heal.risk_result
+        FROM
+            KOBORO_CUSTOMER_INFORMATION cust
+        LEFT JOIN KOBORO_RISK_ASSESSMENT_QUESTIONNAIRE heal ON cust.archival_number = heal.archival_number
+        WHERE
+            heal.risk_result LIKE "%"#{arr}"%"
+        GROUP BY
+            cust.archival_number
+	</select>
+
+    <!--根据档案号查询blocId App-->
+    <select id="findBlocIdByArchivalNumber" parameterType="java.lang.String" resultType="java.lang.Long" >
+     SELECT bloc_id FROM koboro_customer_information a  WHERE a.archival_number=#{archivalNumber}
+    </select>
+</mapper>

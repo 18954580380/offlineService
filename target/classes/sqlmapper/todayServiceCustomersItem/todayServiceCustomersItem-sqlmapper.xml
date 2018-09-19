@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.koboro.offlineservice.repository.TodayServiceCustomersItemMapper">
+   <!-- 根据当前登陆者的用户名时间查询任务ID -->
+   <select id="findItemsByCus"  parameterType="TodayServiceCustomers" resultType="java.util.Map">
+	 SELECT * FROM offline_service_today_service_customers_item i WHERE i.archival_number=#{archivalNumber} AND i.theme_task_id=#{themeTaskId}
+   </select>
+   
+   <!-- 删除放弃的任务 -->
+   <select id="deleteCustomersItems"  parameterType="java.lang.Object">
+	DELETE FROM offline_service_today_service_customers_item where theme_task_id=#{themeTaskId}
+	and archival_number=#{archivalNumber} and served_items=#{item}
+   </select>
+   
+   <!--查询完成完成情况 -->
+   <select id="findCompleteDetail"  parameterType="java.lang.Object" resultType="java.util.Map">
+	SELECT COUNT(*) number,status   FROM  offline_service_today_service_customers_item WHERE theme_task_id=#{themeTaskId} AND archival_number =#{archivalNumber} GROUP BY STATUS
+   </select>
+
+   <!--查询用户服务项目进程 -->
+   <select id="findServiceItemProcess"  parameterType="java.lang.Object" resultType="cn.koboro.offlineservice.pojo.entity.TodayServiceCustomersItem">
+	SELECT  *   FROM  offline_service_today_service_customers_item WHERE theme_task_id=#{themeTaskId} AND archival_number =#{archivalNumber}
+   </select>
+
+</mapper>

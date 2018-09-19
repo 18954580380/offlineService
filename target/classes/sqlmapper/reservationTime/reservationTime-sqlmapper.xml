@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.koboro.offlineservice.repository.ReservationTimeMapper">
+   <!-- 查询时间段 -->
+   <select id="findReservationTimeByTaskId" parameterType="java.lang.Integer" resultType="ReservationTime">
+   SELECT * FROM offline_service_reservation_time WHERE  theme_task_id=#{taskId}
+   </select>
+
+   <!--删除时间段-->
+   <delete id="deleteByTaskId" parameterType="java.lang.Integer">
+      delete  from  offline_service_reservation_time where theme_task_id=#{taskId}
+   </delete>
+</mapper>

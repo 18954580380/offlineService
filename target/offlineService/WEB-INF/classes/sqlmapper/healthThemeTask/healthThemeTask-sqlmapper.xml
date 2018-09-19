@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.koboro.offlineservice.repository.HealthThemeTaskMapper">
+   <!-- 服务任务列表查询 -->
+   <select id="selectAllTasks" parameterType="string" resultType="java.util.Map">
+	SELECT 
+	  t.*,
+	  GROUP_CONCAT(i.service_project) serviceProjects
+	FROM
+	  offline_service_health_theme_task t 
+	  LEFT JOIN
+	  offline_service_health_theme_service_item i 
+	  ON t.id = i.theme_task_id 
+	   WHERE 1=1
+	   <if test="themeName!=null and themeName!=''">  
+             AND te.theme_name  like "%"#{themeName}"%" 
+       </if> 
+	   <if test="serviceAddress!=null and serviceAddress!=''">  
+             AND t.service_address  like "%"#{serviceAddress}"%" 
+       </if> 
+	   <if test="blocName!=null and blocName!=''">  
+             AND t.bloc_name like "%"#{blocName}"%" 
+       </if> 
+	GROUP BY
+	  t.id ORDER BY t.service_start_time DESC
+   </select>
+   <!-- Id查询数据 -->
+   <select id="selectServiceTaskById" parameterType="java.lang.String" resultType="HealthThemeTask">
+	SELECT t.*	FROM offline_service_health_theme_task t WHERE t.id =#{id}
+   </select>
+   <!-- Id查询数据 -->
+   <select id="selectServiceHealthThemeServiceItem" parameterType="java.lang.Integer" resultType="HealthThemeServiceItem">
+	SELECT * FROM  offline_service_health_theme_service_item WHERE theme_task_id = #{id}
+   </select>
+   <!-- Id查询数据 -->
+   <select id="selectHealthThemeTemplate" parameterType="java.lang.Integer" resultType="HealthThemeTemplate">
+	SELECT * FROM offline_service_health_theme_template WHERE id =  #{themeId}
+   </select>
+   <!-- Id查询管理师 -->
+   <select id="selectHealthThemeServiceItemJoinDoctor" parameterType="java.lang.Integer" resultType="HealthThemeServiceItemJoinDoctor">
+	SELECT * FROM offline_service_health_theme_service_item_join_doctor WHERE theme_task_id =  #{themeTaskId}
+   </select>
+	<!--删除-->
+	<delete id="deleteServiceTaskById" parameterType="java.lang.Integer">
+		DELETE FROM offline_service_health_theme_task WHERE id=#{id}
+	</delete>
+
+	<!--根据集团id查询任务列表-->
+	<select id="findTask" resultType="cn.koboro.offlineservice.pojo.entity.HealthThemeTask">
+		select * from  offline_service_health_theme_task where bloc_id=#{blocId}
+	</select>
+
+	<!--根据集团名称,主题名称查询主题任务App-->
+	<select id="findTaskByBlocIdAndThemeName" resultType="java.util.Map">
+		select tt.* from  offline_service_health_theme_task tt JOIN offline_service_theme_task_activity ta ON tt.id=ta.theme_task_id where bloc_id=#{blocId}
+		<if test="themeName!=null and themeName!=''">
+			AND theme_name  like "%"#{themeName}"%"
+		</if>
+	</select>
+	<!--健康主题关联的活动Id APP-->
+	<select id="findActivityIdByTaskId" resultType="cn.koboro.offlineservice.pojo.entity.ThemeTaskActivity" parameterType="java.lang.Integer">
+     SELECT * FROM offline_service_theme_task_activity WHERE theme_task_id=#{themeTaskId} limit 1
+	</select>
+
+</mapper>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.koboro.offlineservice.repository.PendingCustomersMapper">
+   <!-- 查询未邀约客户 -->
+   <!-- 根据当前登陆者的用户名时间查询任务ID -->
+   <select id="findTasksByLoginNameAndDate"   resultType="java.util.Map">
+      SELECT
+      t.*
+      FROM
+      offline_service_health_theme_service_item_join_doctor d
+      JOIN
+      offline_service_health_theme_task t
+      ON d.theme_task_id = t.id
+      WHERE d.doctor_id = #{id}
+      AND DATE(t.service_start_time) &lt;= DATE(#{date})
+      AND DATE(#{date}) &lt;= DATE(t.service_end_time)
+   </select>
+
+   <!-- 查询当前任务下所有的用户信息 -->
+   <select id="selectPendingCustomers" parameterType="TodayServiceCustomers" resultType="TodayServiceCustomers">
+      SELECT * FROM offline_service_today_service_customers WHERE theme_task_id=#{themeTaskId}
+      <if test="code !='' and code != null">
+         AND  source != 1
+         AND  source !=5
+      </if>
+      <if test="source != null and source !=''">
+         AND source like "%"#{source}"%"
+      </if>
+      <if test="dept!=null and dept!=''">
+         AND dept  like "%"#{dept}"%"
+      </if>
+      <if test="phoneNumber != null and phoneNumber!=''">
+         AND phone_number like "%"#{phoneNumber}"%"
+      </if>
+      <if test="name!=null and name!=''">
+         AND name like "%"#{name}"%"
+      </if>
+      <if test="source!=null and source!=''">
+         AND source like "%"#{source}"%"
+      </if>
+   </select>
+
+   <!-- 查询当前任务下所有的用户信息 -->
+   <select id="selectCustomizeList" parameterType="TodayServiceCustomers" resultType="TodayServiceCustomers">
+      SELECT * FROM offline_service_today_service_customers WHERE theme_task_id=#{themeTaskId}
+         AND source LIKE "5"
+      <if test="dept!=null and dept!=''">
+         AND dept  like "%"#{dept}"%"
+      </if>
+      <if test="phoneNumber != null and phoneNumber!=''">
+         AND phone_number like "%"#{phoneNumber}"%"
+      </if>
+      <if test="name!=null and name!=''">
+         AND name like "%"#{name}"%"
+      </if>
+      <if test="source!=null and source!=''">
+         AND source like "%"#{source}"%"
+      </if>
+   </select>
+
+   <select id="selectPendingCustomersCount" parameterType="TodayServiceCustomers"  resultType="java.lang.Integer">
+      SELECT count(1) FROM offline_service_today_service_customers a WHERE  theme_task_id=#{themeTaskId}
+       <if test="source != null and source !=''">
+          AND a.source LIKE "%"#{source}"%"
+       </if>
+   </select>
+
+   <select id="selectSendAMessageCustomers" resultType="TodayServiceCustomers" parameterType="TodayServiceCustomers">
+      SELECT * FROM offline_service_today_service_customers WHERE theme_task_id=#{themeTaskId}
+        AND   source != 2
+   </select>
+   <!--通过Id查询用户-->
+   <select id="selectCustomerInfortion" parameterType="java.lang.Long" resultType="TodayServiceCustomers">
+      SELECT * FROM offline_service_today_Service_customers a
+      WHERE   a.id=#{id}
+   </select>
+   <select id="selectCustomerInfortionById" parameterType="java.lang.String" resultType="TodayServiceCustomers">
+      SELECT * FROM offline_service_today_Service_customers a
+      WHERE a.archival_number like "%"#{archivalNumber}"%"
+   </select>
+   <!--通过Id查询用户-->
+   <select id="selectCustomize" parameterType="TodayServiceCustomers" resultType="TodayServiceCustomers">
+      SELECT * FROM offline_service_today_Service_customers a
+      WHERE theme_task_id=#{themeTaskId}
+      <if test=" dept != '' and dept != null">
+         AND  a.dept like "%"#{dept}"%"
+      </if>
+      <if test=" phoneNumber != '' and phoneNumber != null">
+         AND   a.phone_number like "%"#{phoneNumber}"%"
+      </if>
+      <if test=" name != '' and name != null">
+         AND   a.name like "%"#{name}"%"
+      </if>
+      <if test=" archivalNumber != '' and archivalNumber != null">
+         AND   a.archival_number like "%"#{archivalNumber}"%"
+      </if>
+   </select>
+
+   <insert id="saveCustomers"  parameterType="TodayServiceCustomers">
+      insert into offline_service_today_Service_customers(theme_task_id,archival_number,name,dept_id,dept,sex,phone_number,is_join,time_quantum,morning_or_afternoon,source,status,doctor_flag,complete_status,create_time,update_time)
+      values(#{themeTaskId},#{archivalNumber},#{name},#{deptId},#{dept},#{sex},#{phoneNumber},#{isJoin},#{timeQuantum},#{morningOrAfternoon},#{source},#{status},#{doctorflag},#{completeStatus},#{createTime},#{updateTime})
+   </insert>
+   <update id="updCustomers" parameterType="TodayServiceCustomers">
+      update offline_service_today_Service_customers
+      <set >
+         <if test="source != null" >
+            source = #{source,jdbcType=VARCHAR},
+         </if>
+      </set>
+      where archival_number = #{archivalNumber,jdbcType=VARCHAR}
+   </update>
+</mapper>

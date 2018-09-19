@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.koboro.offlineservice.repository.HealthThemeTemplateMapper">
+   <!-- 查询主要问题,主要症状 -->
+   <select id="findProblemDisease" parameterType="string" resultType="java.util.Map">
+   SELECT name FROM koboro_problem_disease WHERE  TYPE=#{param}
+   </select>
+   <!-- 查询所有主题根据名称 -->
+   <select id="selectAllByThemeName" parameterType="string" resultType="cn.koboro.offlineservice.pojo.entity.HealthThemeTemplate">
+    SELECT * FROM offline_service_health_theme_template  where 1=1
+    <if test="themeName!=null and themeName!=''">  
+             AND theme_name  like "%"#{themeName}"%" 
+       </if> 
+   </select>
+</mapper>

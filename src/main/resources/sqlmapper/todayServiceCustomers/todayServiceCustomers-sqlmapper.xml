@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.koboro.offlineservice.repository.TodayServiceCustomersMapper">
+   <!-- 根据当前登陆者的用户名时间查询任务ID -->
+   <select id="findTasksByLoginNameAndDate" resultType="java.util.Map">
+	   SELECT 
+	  t.*
+	FROM
+	  offline_service_health_theme_service_item_join_doctor d 
+	  JOIN
+	  offline_service_health_theme_task t 
+	  ON d.theme_task_id = t.id 
+	  WHERE doctor_id = #{doctorId} 
+	  AND DATE(t.service_start_time) &lt;= DATE(#{date}) 
+	  AND DATE(#{date}) &lt;= DATE(t.service_end_time)
+   </select>
+   
+   <!-- 查询当前任务下所有的用户信息 -->
+   <select id="findCustomersByTaskId" parameterType="TodayServiceCustomers" resultType="TodayServiceCustomers">
+    SELECT * FROM offline_service_today_service_customers WHERE theme_task_id=#{themeTaskId}
+    AND status=#{status}
+	   <if test="dept!=null and dept!=''">  
+             AND dept  like "%"#{dept}"%" 
+       </if> 
+	   <if test="phoneNumber!=null and phoneNumber!=''">  
+             AND phone_number like "%"#{phoneNumber}"%" 
+       </if> 
+	   <if test="name!=null and name!=''">  
+             AND name like "%"#{name}"%" 
+       </if> 
+	   <if test="source!=null and source!=''">  
+             AND source like "%"#{source}"%" 
+       </if> 
+	   <if test="timeQuantum!=null and timeQuantum!=''">  
+	         AND LOCATE(time_quantum ,#{timeQuantum})
+       </if> 
+	   <if test="morningOrAfternoon!=null and morningOrAfternoon!=''">  
+             AND morning_or_afternoon =${morningOrAfternoon} 
+       </if> 
+    
+   </select>
+   
+   <!-- 查询当前任务下所有的用户信息 -->
+   <select id="findStatusCustomersByTaskId" parameterType="java.lang.Integer" resultType="TodayServiceCustomers">
+    SELECT * FROM offline_service_today_service_customers WHERE theme_task_id=#{taskId}
+   </select>
+   
+   <!--查询服务记录,只查询已经完成的 -->
+   <select id="findServiceRecord" parameterType="java.lang.String" resultType="java.util.Map">
+	    SELECT 
+	  t.service_start_time,
+	  t.service_address,
+	  t.id taskId,
+	  GROUP_CONCAT(i.served_items) items 
+	FROM
+	  offline_service_today_service_customers c 
+	  JOIN
+	  offline_service_health_theme_task t 
+	  ON t.id = c.theme_task_id 
+	  AND STATUS = 2 
+	  AND c.archival_number = #{archivalNumber} 
+	  <if test="date!=null and date!=''">  
+       AND DATE(t.service_start_time) &lt;= DATE(#{date}) 
+	   AND DATE(#{date}) &lt;= DATE(t.service_end_time)
+       </if> 
+	  JOIN
+	  offline_service_today_service_customers_item i 
+	  ON c.archival_number = i.archival_number 
+	  AND c.theme_task_id = i.theme_task_id 
+	GROUP BY t.id 
+   </select>
+   
+   
+   <!-- 跟新用户完成状态 -->
+   <update id="updateStatus" parameterType="java.lang.Object">
+   UPDATE offline_service_today_service_customers SET STATUS = 2 WHERE theme_task_id=#{themeTaskId} AND archival_number =#{archivalNumber}
+   </update>
+
+	<select id="selectUserByArchivalNumber"  resultType="TodayServiceCustomers">
+		SELECT * FROM offline_service_today_Service_customers a
+		WHERE a.archival_number like "%"#{archivalNumber}"%"
+	</select>
+
+	<!--查询当前用户是否参与服务-->
+	<select id="findCustomersByTaskIdAndArchivalNumber"  resultType="cn.koboro.offlineservice.pojo.entity.TodayServiceCustomers">
+		SELECT * FROM offline_service_today_Service_customers a
+		WHERE a.archival_number = #{archivalNumber} and a.theme_task_id=#{taskId}
+	</select>
+
+</mapper>

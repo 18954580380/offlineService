@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.koboro.offlineservice.repository.HealthThemeServiceItemMapper">
+   <!-- 服务任务列表查询 -->
+   <select id="findItemsByTaskId" parameterType="java.lang.Integer" resultType="HealthThemeServiceItem">
+	  SELECT * FROM offline_service_health_theme_service_item WHERE theme_task_id=#{taskId}
+   </select>
+   <!-- 查询更多其他服务项目 -->
+   <select id="findOtherItems"  resultType="java.util.Map">
+	 SELECT item_name,GROUP_CONCAT(NAME) item FROM koboro_service_content 
+	 where 1=1
+	 <if test="name!=null and name!=''">  
+             AND name  like "%"#{name}"%" 
+       </if> 
+	 GROUP BY item_name
+   </select>
+   
+   <!-- 查询所有的医生 -->
+   <select id="findDoctors"  resultType="java.util.Map">
+	SELECT kd.doctor_name,acs.login_name FROM koboro_doctor kd JOIN acs_user  acs ON kd.doctor_id=acs.id
+   </select>
+   
+   <!-- 获取当前登录用户 -->
+   <select id="findDoctorByLoginName"  parameterType="java.lang.String" resultType="cn.koboro.offlineservice.pojo.entity.KoboroDoctor">
+	SELECT acs.id,kd.doctor_type,kd.doctor_name FROM koboro_doctor kd JOIN acs_user  acs ON kd.doctor_id=acs.id
+	where acs.login_name=#{login_name}
+   </select>
+
+   <!-- 查询服务介绍 -->
+   <select id="findServiceIntroduction"  parameterType="java.lang.Object" resultType="java.lang.String">
+     SELECT service_content serviceContent FROM offline_service_health_theme_service_item WHERE theme_task_id=#{taskId} and  service_project=#{itemName} limit 1
+   </select>
+</mapper>

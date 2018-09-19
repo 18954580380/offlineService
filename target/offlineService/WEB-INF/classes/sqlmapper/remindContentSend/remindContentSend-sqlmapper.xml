@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.koboro.offlineservice.repository.RemindContentSendMapper">
+
+   <!-- 发送消息 -->
+   <insert id="save" parameterType="cn.koboro.offlineservice.pojo.entity.RemindContentSend" >
+		insert into koboro_remind_content_send(created_time,theme_task_id,archival_number,customer_id,user_name,content,send_date,type,data_ids,is_auto)
+        values(#{createdTime},#{themeTaskId},#{archivalNumber},#{customerId},#{userName},#{content},#{sendDate},#{type},#{dataIds},#{isAuto})
+   </insert>
+    <select id="selectRemindContentSend" resultType="java.util.HashMap">
+        SELECT
+            send_date,
+            content,
+            type,
+            GROUP_CONCAT(user_name) as name
+        FROM
+            koboro_remind_content_send a
+        WHERE
+            a.type = "消息推送"
+            AND
+            a.data_ids IS NOT NULL
+            AND
+            a.data_ids !=""
+        GROUP BY
+            data_ids
+    </select>
+
+</mapper>

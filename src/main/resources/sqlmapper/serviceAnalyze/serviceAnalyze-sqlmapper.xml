@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.koboro.offlineservice.repository.ServiceAnalyzeMapper">
+   <!-- 服务情况汇总任务列表  -->
+   <select id="selectAllData" parameterType="java.lang.String" resultType="java.util.Map">
+	SELECT 
+	  a.*,
+	  COUNT(ci.id) serviceNumber 
+	FROM
+	  (SELECT 
+	    t.*,
+	    COUNT(c.id) number 
+	  FROM
+	    offline_service_health_theme_task t 
+	    LEFT JOIN
+	    offline_service_today_service_customers c 
+	    ON t.id = c.theme_task_id 
+	    LEFT JOIN
+	    offline_service_health_theme_template te 
+	    ON te.id = t.theme_id 
+	     WHERE 1 = 1 
+	  <if test="taskId!=null and taskId!=''">  
+             AND t.id  =CAST(#{taskId} AS SIGNED)
+       </if> 
+	   <if test="themeName!=null and themeName!=''">  
+             AND te.theme_name  like "%"#{themeName}"%" AND te.theme_name is not null
+       </if> 
+       <if test="blocName!=null and blocName!=''">  
+             AND t.bloc_name like "%"#{blocName}"%" 
+       </if> 
+       <if test="date!=null and date!=''">  
+             AND DATE(t.service_start_time) &lt;= DATE(#{date}) 
+	         AND DATE(#{date}) &lt;= DATE(t.service_end_time)
+       </if> 
+	  GROUP BY t.id) a 
+	  LEFT JOIN
+	  offline_service_today_service_customers_item ci 
+	  ON a.id = ci.theme_task_id 
+	  AND ci.STATUS = 1 
+	GROUP BY a.id 
+   </select>
+   
+   <!-- 查询各项目服务人数 -->
+   <select id="findServiceNumber" parameterType="java.lang.Integer" resultType="java.util.Map">
+	   SELECT 
+	  ci.served_items,
+	  COUNT(ci.archival_number) number 
+	FROM
+	  offline_service_today_service_customers_item ci 
+	  WHERE ci.theme_task_id = #{taskId}
+	  AND ci.STATUS != 2 
+	GROUP BY ci.served_items 
+   </select>
+   
+   <!-- 根据任务id查询所有的用户 -->
+    <select id="findCustomersByTaskId" parameterType="java.lang.Integer" resultType="cn.koboro.offlineservice.pojo.entity.TodayServiceCustomers">
+    SELECT * FROM offline_service_today_service_customers c WHERE c.theme_task_id =#{taskId}
+    </select>
+    
+   <!-- 根据任务id查询健康管理师和医生 -->
+    <select id="findDoctorDetail" parameterType="java.lang.Integer" resultType="java.util.Map">
+   	SELECT   GROUP_CONCAT( DISTINCT(doctor_name)) names, IF(TYPE=1,'健康管理师','医生') type FROM offline_service_health_theme_service_item_join_doctor WHERE  theme_task_id=#{taskId}  GROUP BY  TYPE
+    </select>
+    
+   <!-- 根据任务id查询健康管理师和医生 -->
+    <select id="findServiceDetail" parameterType="java.lang.Integer" resultType="java.util.Map">
+   SELECT 
+  c.archival_number,
+  c.NAME,
+  c.dept,
+  GROUP_CONCAT(ci.served_items) items 
+FROM
+  offline_service_today_service_customers c 
+ left JOIN
+  offline_service_today_service_customers_item ci 
+  ON c.archival_number = ci.archival_number 
+  AND c.theme_task_id = ci.theme_task_id 
+WHERE c.theme_task_id = #{taskId}
+GROUP BY c.archival_number 
+    </select>
+</mapper>

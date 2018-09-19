@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.koboro.offlineservice.repository.HealthThemeServiceItemJoinDoctorMapper">
+   <!-- 健康服务团队查询 -->
+   <select id="findSeriveceTeam"  parameterType="java.lang.Integer" resultType="java.util.Map">
+    SELECT * FROM offline_service_health_theme_service_item_join_doctor d JOIN koboro_doctor kd ON d.doctor_id=kd.doctor_id WHERE d.theme_task_id=#{themeTaskId}
+   </select>
+
+
+</mapper>

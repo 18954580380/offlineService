@@ -1,0 +1,80 @@
+##tomcat##
+server:
+  tomcat:
+    uri-encoding: utf-8
+  jsp-servlet:
+    init-parameters:
+      development: true
+  port: 8083
+  context-path: /offlineService
+
+##spring##
+spring:
+  profiles:
+    active: dev
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database: mysql
+  mvc:
+    view:
+      prefix: /WEB-INF/pages/
+      suffix: .jsp
+  jmx:
+    default-domain: offlineService
+ ##热部署配置##
+  thymeleaf:
+    cache: false
+  devtools:
+    restart:
+      enabled:  true
+ 
+  aop:
+    proxy-target-class: true
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://192.168.1.191:3306/koboro_daxia
+    username: root
+    password: Koboropassword,.
+
+    dbcp2:
+      min-idle: 5
+      max-idle: 8
+      initial-size: 5
+      max-total: 50
+      max-wait-millis: 250000
+      test-while-idle: true
+      validation-query: SELECT 1 FROM DUAL
+      
+mybatis:
+  mapper-locations: classpath:sqlmapper/*/*-sqlmapper.xml
+  type-aliases-package: cn.koboro.offlineservice.pojo.entity
+  configuration:
+    map-underscore-to-camel-case: true
+
+mapper:
+ #order: BEFORE
+ mappers: cn.koboro.offlineservice.core.IBaseMapper
+
+pagehelper:
+  offset-as-page-num: "true"
+  row-bounds-with-count: "true"
+  reasonable: "true"
+  
+img: 1
+
+shiro:
+  #cas: http://1.119.131.131:8089/cas # 这是CAS服务的地址
+  #server: http://192.168.1.166:8080 # 自己应用的地址，测试使用127即可
+  cas: http://192.168.1.191:8086/cas # 这是CAS服务的地址
+  server: http://192.168.1.174:8083/offlineService # 自己应用的地址，测试使用127即可
+
+
+
+sftp:
+  host: 192.168.1.191
+  port: 22
+  username: root
+  password: 123
+  url: http://192.168.1.191:8086/iMatrix-static/images/healthThemeTask/
